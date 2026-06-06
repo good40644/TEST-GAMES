@@ -868,11 +868,27 @@ function hideMessage() {
 }
 function showSurrenderConfirm() {
   if (!gameActive) return;
+  const oppLabel = onlineMode ? '對方' : 'AI';
   document.getElementById('msg-title').textContent = '🏳 確定投降？';
-  document.getElementById('msg-sub').textContent   = onlineMode ? '投降後本局算對方獲勝' : '投降後本局算 AI 獲勝';
-  document.getElementById('msg-btns').innerHTML =
-    '<button class="action-btn primary" onclick="hideMessage()" style="margin-right:8px">取消</button>' +
-    '<button class="action-btn" style="border-color:#c0392b;color:#e74c3c" onclick="hideMessage();if(onlineMode)sendMsg({type:\'surrender\'});gameOver(false)">確定投降</button>';
+  document.getElementById('msg-sub').textContent   = '投降後本局算' + oppLabel + '獲勝';
+  const btns = document.getElementById('msg-btns');
+  btns.innerHTML = '';
+  const cancelBtn = document.createElement('button');
+  cancelBtn.className = 'action-btn primary';
+  cancelBtn.style.marginRight = '8px';
+  cancelBtn.textContent = '取消';
+  cancelBtn.onclick = hideMessage;
+  const confirmBtn = document.createElement('button');
+  confirmBtn.className = 'action-btn';
+  confirmBtn.style.cssText = 'border-color:#c0392b;color:#e74c3c';
+  confirmBtn.textContent = '確定投降';
+  confirmBtn.onclick = function() {
+    hideMessage();
+    if (onlineMode) sendMsg({ type: 'surrender' });
+    gameOver(false);
+  };
+  btns.appendChild(cancelBtn);
+  btns.appendChild(confirmBtn);
   document.getElementById('msg-overlay').classList.add('show');
 }
 function updateScore() {
