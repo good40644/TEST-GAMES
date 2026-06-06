@@ -449,18 +449,21 @@ body {
 /* ─── CHAT WIDGET ─── */
 .chat-widget {
   position: fixed;
-  bottom: 20px; right: 20px;
+  bottom: 16px; right: 16px;
   z-index: 300;
-  display: none; /* shown only when online */
+  display: none;
   flex-direction: column;
   align-items: flex-end;
   gap: 8px;
+  /* Prevent widget from going taller than viewport */
+  max-height: calc(100dvh - 32px);
 }
 .chat-widget.online-show { display: flex; }
 
 /* Collapsed toggle button */
 .chat-toggle {
   position: relative;
+  flex-shrink: 0;
   width: 46px; height: 46px;
   border-radius: 50%;
   background: var(--panel);
@@ -486,7 +489,7 @@ body {
 
 /* Chat panel */
 .chat-panel {
-  width: 280px;
+  width: min(280px, calc(100vw - 32px));
   background: var(--panel);
   border: 1px solid var(--border);
   border-radius: 8px;
@@ -494,9 +497,13 @@ body {
   overflow: hidden;
   display: none;
   flex-direction: column;
+  /* Key: fill available height but never overflow below toggle button */
+  max-height: calc(100dvh - 32px - 54px); /* viewport - margin - toggle height */
+  min-height: 0;
 }
 .chat-panel.open { display: flex; }
 .chat-header {
+  flex-shrink: 0;
   padding: 10px 12px;
   background: rgba(201,162,39,.08);
   border-bottom: 1px solid var(--border);
@@ -511,7 +518,7 @@ body {
 .chat-close-btn:hover { color: var(--text); }
 .chat-messages {
   flex: 1;
-  height: 220px;
+  min-height: 0;        /* allow shrinking below content size */
   overflow-y: auto;
   padding: 10px;
   display: flex;
@@ -554,6 +561,7 @@ body {
   color: var(--text-dim); font-size: .7rem; font-style: italic;
 }
 .chat-input-row {
+  flex-shrink: 0;   /* always visible, never squeezed out */
   display: flex;
   padding: 8px;
   gap: 6px;
@@ -579,6 +587,103 @@ body {
   cursor: pointer; transition: background .15s;
 }
 .chat-send-btn:hover { background: var(--gold-light); }
+
+
+/* ─── GUIDE PANEL ─── */
+.guide-overlay {
+  position: fixed; inset: 0; z-index: 400;
+  background: rgba(13,10,7,0.92);
+  display: none; align-items: flex-start; justify-content: center;
+  overflow-y: auto;
+  padding: 20px 12px 40px;
+}
+.guide-overlay.show { display: flex; }
+.guide-box {
+  background: var(--panel);
+  border: 1px solid var(--gold);
+  border-radius: 8px;
+  width: min(700px, 100%);
+  padding: 28px 28px 32px;
+  position: relative;
+  box-shadow: 0 12px 48px rgba(0,0,0,0.6);
+}
+.guide-close {
+  position: absolute; top: 14px; right: 16px;
+  background: none; border: none; color: var(--text-dim);
+  font-size: 1.3rem; cursor: pointer; line-height: 1;
+}
+.guide-close:hover { color: var(--text); }
+.guide-box h1 {
+  font-size: 1.2rem; color: var(--gold);
+  letter-spacing: .12em; margin-bottom: 20px;
+  text-align: center; padding-bottom: 14px;
+  border-bottom: 1px solid var(--border);
+}
+/* Tab nav */
+.guide-tabs {
+  display: flex; gap: 6px; flex-wrap: wrap;
+  margin-bottom: 20px;
+}
+.guide-tab {
+  padding: 6px 14px;
+  border: 1px solid var(--border); border-radius: 20px;
+  background: transparent; color: var(--text-dim);
+  font-family: 'Noto Serif TC', serif; font-size: .8rem;
+  cursor: pointer; transition: all .15s;
+}
+.guide-tab:hover { border-color: var(--gold); color: var(--gold); }
+.guide-tab.active { border-color: var(--gold); background: rgba(201,162,39,.12); color: var(--gold-light); }
+/* Tab content */
+.guide-page { display: none; }
+.guide-page.show { display: block; }
+.guide-section {
+  margin-bottom: 22px;
+}
+.guide-section h2 {
+  font-size: .9rem; color: var(--gold);
+  margin-bottom: 10px; padding-bottom: 6px;
+  border-bottom: 1px solid var(--border);
+  letter-spacing: .08em;
+}
+.guide-section h3 {
+  font-size: .82rem; color: var(--text);
+  margin: 10px 0 6px; letter-spacing: .05em;
+}
+.guide-section p, .guide-section li {
+  font-size: .78rem; color: var(--text-dim); line-height: 1.8;
+}
+.guide-section ul, .guide-section ol {
+  padding-left: 18px; margin: 4px 0;
+}
+.guide-section li { margin-bottom: 2px; }
+.guide-section li b { color: var(--text); }
+.guide-badge {
+  display: inline-block;
+  padding: 2px 8px; border-radius: 3px;
+  font-size: .72rem; font-weight: 700;
+  margin-right: 4px; vertical-align: middle;
+}
+.gb-gold { background: rgba(201,162,39,.15); color: var(--gold); border: 1px solid var(--gold); }
+.gb-red  { background: rgba(192,57,43,.15);  color: var(--red-bright); border: 1px solid var(--red); }
+.gb-blue { background: rgba(41,128,185,.15); color: #5dade2; border: 1px solid #2980b9; }
+.gb-grey { background: rgba(255,255,255,.05); color: var(--text-dim); border: 1px solid var(--border); }
+/* Rank table */
+.rank-table {
+  width: 100%; border-collapse: collapse;
+  font-size: .76rem; margin-top: 6px;
+}
+.rank-table th {
+  background: rgba(201,162,39,.08);
+  color: var(--gold); font-weight: 700;
+  padding: 6px 10px; text-align: left;
+  border-bottom: 1px solid var(--border);
+}
+.rank-table td {
+  padding: 5px 10px; color: var(--text-dim);
+  border-bottom: 1px solid rgba(255,255,255,.04);
+}
+.rank-table tr:last-child td { border-bottom: none; }
+.rank-table td:first-child { color: var(--text); font-weight: 600; }
 
 </style>
 </style>
@@ -611,6 +716,9 @@ body {
     <div class="toolbar-sep"></div>
     <button class="online-badge" id="online-badge" onclick="showOnlinePanel()">
       <span class="dot"></span><span id="online-badge-text">連線對戰</span>
+    </button>
+    <button class="online-badge" onclick="showGuide()" style="border-color:var(--border)" title="指南">
+      ？ 指南
     </button>
     <div class="statusbar">
       <div class="turn-indicator">
@@ -2509,6 +2617,26 @@ function chatSystemMsg(text) {
 }
 
 /* ═══════════════════════════════════════════════
+   GUIDE
+═══════════════════════════════════════════════ */
+function showGuide() {
+  document.getElementById('guide-overlay').classList.add('show');
+  showGuidePage('features'); // always reset to first tab
+}
+function hideGuide() {
+  document.getElementById('guide-overlay').classList.remove('show');
+}
+function showGuidePage(id) {
+  document.querySelectorAll('.guide-page').forEach(p => p.classList.remove('show'));
+  document.querySelectorAll('.guide-tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('gp-' + id).classList.add('show');
+  // Activate the matching tab
+  document.querySelectorAll('.guide-tab').forEach(t => {
+    if (t.getAttribute('onclick') === `showGuidePage('${id}')`) t.classList.add('active');
+  });
+}
+
+/* ═══════════════════════════════════════════════
    INIT
 ═══════════════════════════════════════════════ */
 document.addEventListener('DOMContentLoaded', () => {
@@ -2518,5 +2646,185 @@ document.addEventListener('DOMContentLoaded', () => {
   setTimeout(initPeer, 800);
 });
 </script>
+
+<!-- ─── GUIDE OVERLAY ─── -->
+<div class="guide-overlay" id="guide-overlay" onclick="if(event.target===this)hideGuide()">
+  <div class="guide-box">
+    <button class="guide-close" onclick="hideGuide()">✕</button>
+    <h1>📖 棋藝殿堂 · 指南</h1>
+
+    <div class="guide-tabs">
+      <button class="guide-tab active" onclick="showGuidePage('features')">功能介紹</button>
+      <button class="guide-tab" onclick="showGuidePage('gomoku')">五子棋</button>
+      <button class="guide-tab" onclick="showGuidePage('darkchess')">暗棋</button>
+      <button class="guide-tab" onclick="showGuidePage('xiangqi')">象棋</button>
+      <button class="guide-tab" onclick="showGuidePage('online')">連線對戰</button>
+    </div>
+
+    <!-- ── 功能介紹 ── -->
+    <div class="guide-page show" id="gp-features">
+      <div class="guide-section">
+        <h2>🎮 工具列功能</h2>
+        <ul>
+          <li><b>棋種選擇</b>：點擊「五子棋」「暗棋」「象棋」切換遊戲，切換後自動重新開局。</li>
+
+          <li><b>新局</b>：重新開始一盤。連線模式下會邀請對手，需雙方同意才開新局。</li>
+          <li><b>悔棋</b>：撤回上一手，僅限單機模式。</li>
+          <li><b>投降</b>：彈出確認視窗，確認後本局算負。連線模式下會通知對手。</li>
+          <li><b>連線對戰</b>：開啟連線面板，可建立或加入房間與他人對戰。</li>
+
+        </ul>
+      </div>
+      <div class="guide-section">
+        <h2>📊 狀態列</h2>
+        <ul>
+          <li>左側圓點＋文字顯示目前輪到誰，<span style="color:var(--red-bright)">●</span> 紅方，<span style="color:#888">●</span> 黑方。</li>
+          <li>右側「你 <b>0</b> · AI <b>0</b>」記錄本次開啟以來的勝場數。連線時 AI 改顯示「對手」。</li>
+        </ul>
+      </div>
+      <div class="guide-section">
+        <h2>💬 聊天功能（連線模式）</h2>
+        <ul>
+          <li>成功連線後，右下角出現 💬 懸浮按鈕。</li>
+          <li>點擊展開聊天視窗，可與對手互傳文字。</li>
+          <li>視窗縮小時，收到新訊息按鈕上方會出現 <span style="color:var(--red-bright)">●</span> 紅點提示。</li>
+          <li>按 <b>Enter</b> 鍵可直接送出訊息。</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- ── 五子棋 ── -->
+    <div class="guide-page" id="gp-gomoku">
+      <div class="guide-section">
+        <h2>⊕ 基本規則</h2>
+        <ul>
+          <li>棋盤 <b>15 × 15</b>，雙方輪流落子。</li>
+          <li><b>黑方（你）先行</b>；單機模式 AI 執白。</li>
+          <li>先在<b>橫、豎、斜</b>任一方向連成 <b>5 子</b>者獲勝。</li>
+          <li>棋盤落滿無人獲勝則為<b>平局</b>。</li>
+          <li>落子後，最後一手棋上方有<b>黃點</b>標示。</li>
+        </ul>
+      </div>
+
+      <div class="guide-section">
+        <h2>💡 技巧提示</h2>
+        <ul>
+          <li>優先搶佔中央區域，控制更多方向。</li>
+          <li><b>活三</b>（雙端開放的三子）是極大威脅，AI 會優先封堵。</li>
+          <li>同時建立兩個四連棋型（雙四）可形成必勝局面。</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- ── 暗棋 ── -->
+    <div class="guide-page" id="gp-darkchess">
+      <div class="guide-section">
+        <h2>♟ 基本規則</h2>
+        <ul>
+          <li>棋盤 <b>4 × 8</b>，共 32 枚棋子（紅黑各 16 枚）隨機排列、全部朝下。</li>
+          <li><b>第一手</b>：翻開任意一枚棋子，翻出的顏色即為你的陣營。</li>
+          <li>每回合可選擇：<b>翻開</b>一枚暗子、或<b>移動／吃子</b>。</li>
+          <li>消滅對方所有棋子者獲勝。</li>
+        </ul>
+      </div>
+      <div class="guide-section">
+        <h2>⚔ 棋子大小與吃子規則</h2>
+        <table class="rank-table">
+          <tr><th>棋子</th><th>紅方</th><th>黑方</th><th>數量（每方）</th></tr>
+          <tr><td>最大 (7)</td><td>帥</td><td>將</td><td>×1</td></tr>
+          <tr><td>(6)</td><td>仕</td><td>士</td><td>×2</td></tr>
+          <tr><td>(5)</td><td>相</td><td>象</td><td>×2</td></tr>
+          <tr><td>(4)</td><td>車</td><td>車</td><td>×2</td></tr>
+          <tr><td>(3)</td><td>馬</td><td>馬</td><td>×2</td></tr>
+          <tr><td>(2)</td><td>炮</td><td>炮</td><td>×2</td></tr>
+          <tr><td>最小 (1)</td><td>兵</td><td>卒</td><td>×5</td></tr>
+        </table>
+        <ul style="margin-top:10px">
+          <li><b>大吃小、同 rank 互吃</b>（炮除外）。</li>
+          <li><b>兵／卒</b> 只能吃同 rank 的兵卒，以及將／帥（特殊）。</li>
+          <li><b>將／帥</b> 不能吃兵／卒。</li>
+          <li><b>炮</b>：移動與一般棋子相同（上下左右），但<b>必須隔一枚棋子才能跳吃</b>，不能直接步吃。</li>
+          <li><b>炮可被任何 rank ≥ 炮（type ≥ 2）的棋子步行吃掉</b>（兵卒除外）。</li>
+          <li>暗子（未翻開）可被移動至相鄰位置，但<b>不能直接吃暗子</b>。</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- ── 象棋 ── -->
+    <div class="guide-page" id="gp-xiangqi">
+      <div class="guide-section">
+        <h2>♞ 棋盤與陣營</h2>
+        <ul>
+          <li>棋盤 <b>9 路 × 10 行</b>，中間「楚河漢界」分隔雙方。</li>
+          <li>單機：你執<b>紅方</b>，AI 執黑。連線模式：房主執紅先行，訪客執黑。</li>
+        </ul>
+      </div>
+      <div class="guide-section">
+        <h2>♟ 各棋子走法</h2>
+        <table class="rank-table">
+          <tr><th>棋子</th><th>走法</th><th>限制</th></tr>
+          <tr><td>將／帥</td><td>宮格內上下左右各一步</td><td>不出九宮；將帥不可對面（王對王）</td></tr>
+          <tr><td>仕／士</td><td>宮格內斜走一步</td><td>不出九宮</td></tr>
+          <tr><td>相／象</td><td>走「田」字斜兩步</td><td>不可過河；象眼有子則不能走</td></tr>
+          <tr><td>馬</td><td>走「日」字（先直後斜）</td><td>馬腿有子則不能走</td></tr>
+          <tr><td>車</td><td>橫豎任意步數</td><td>途中不可有阻擋</td></tr>
+          <tr><td>炮</td><td>橫豎任意步數移動</td><td>吃子時必須隔一枚棋（炮架）</td></tr>
+          <tr><td>兵／卒</td><td>未過河：只能向前一步；過河後可橫走一步</td><td>不可後退</td></tr>
+        </table>
+      </div>
+      <div class="guide-section">
+        <h2>⚖ 勝負判定</h2>
+        <ul>
+          <li>將對方將／帥<b>將死</b>（無論如何走都無法解將）即獲勝。</li>
+          <li>輪到走子時<b>無任何合法著法</b>也算輸（困斃）。</li>
+          <li>合法著法自動過濾：任何走法若導致己方將帥被攻擊，均不可選。</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- ── 連線對戰 ── -->
+    <div class="guide-page" id="gp-online">
+
+      <div class="guide-section">
+        <h2>🚪 建立房間</h2>
+        <ol>
+          <li>點擊工具列「連線對戰」按鈕開啟面板。</li>
+          <li>頁面載入後自動產生 <b>6 碼房號</b>（例：<code style="color:var(--gold-light)">A3KM7X</code>）。</li>
+          <li>點擊「<b>複製</b>」按鈕，將房號分享給對手。</li>
+          <li>等待對手加入，連線成功後自動開始遊戲。</li>
+          <li>房主執<b>紅方（先手）</b>，訪客執<b>黑方（後手）</b>。</li>
+        </ol>
+      </div>
+      <div class="guide-section">
+        <h2>🔗 加入房間</h2>
+        <ol>
+          <li>在「輸入對手房號」欄貼上對手給的房號。</li>
+          <li>點擊「<b>加入對局</b>」，等待連線建立（約 1–3 秒）。</li>
+          <li>連線成功後自動開始遊戲。</li>
+        </ol>
+      </div>
+      <div class="guide-section">
+        <h2>🔄 對戰中功能</h2>
+        <ul>
+          <li><b>新局</b>：向對手發送重開邀請，對手同意後雙方同步開新局；對手可選擇拒絕。</li>
+          <li><b>切換棋種</b>：點擊棋種按鈕會先發送邀請，對手同意後才切換。</li>
+          <li><b>投降</b>：確認後本局算負，並通知對手。</li>
+
+          <li><b>聊天</b>：右下角 💬 按鈕可展開聊天視窗即時傳訊。</li>
+        </ul>
+      </div>
+      <div class="guide-section">
+        <h2>⚠ 注意事項</h2>
+        <ul>
+
+          <li>若 10 秒內未連線，請確認房號是否正確，或雙方重新整理頁面後再試。</li>
+          <li>中途斷線時雙方會收到通知，可重新連線開新局。</li>
+        </ul>
+      </div>
+    </div>
+
+  </div>
+</div>
+
 </body>
 </html>
