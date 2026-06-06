@@ -869,7 +869,7 @@ function hideMessage() {
 function showSurrenderConfirm() {
   if (!gameActive) return;
   document.getElementById('msg-title').textContent = '🏳 確定投降？';
-  document.getElementById('msg-sub').textContent   = '投降後本局算 AI 獲勝';
+  document.getElementById('msg-sub').textContent   = onlineMode ? '投降後本局算對方獲勝' : '投降後本局算 AI 獲勝';
   document.getElementById('msg-btns').innerHTML =
     '<button class="action-btn primary" onclick="hideMessage()" style="margin-right:8px">取消</button>' +
     '<button class="action-btn" style="border-color:#c0392b;color:#e74c3c" onclick="hideMessage();if(onlineMode)sendMsg({type:\'surrender\'});gameOver(false)">確定投降</button>';
