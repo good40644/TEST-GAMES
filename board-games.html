@@ -455,8 +455,6 @@ body {
   flex-direction: column;
   align-items: flex-end;
   gap: 8px;
-  /* Prevent widget from going taller than viewport */
-  max-height: calc(100dvh - 32px);
 }
 .chat-widget.online-show { display: flex; }
 
@@ -487,9 +485,15 @@ body {
 }
 .chat-unread.show { display: block; }
 
-/* Chat panel */
+/* Chat panel — anchored so it never overflows the viewport */
 .chat-panel {
+  position: fixed;
+  bottom: 70px; /* sit above the toggle button */
+  right: 16px;
   width: min(280px, calc(100vw - 32px));
+  /* Top boundary: leave room for toolbar (~100px) + small gap */
+  max-height: calc(100dvh - 70px - 110px);
+  min-height: 160px;
   background: var(--panel);
   border: 1px solid var(--border);
   border-radius: 8px;
@@ -497,9 +501,6 @@ body {
   overflow: hidden;
   display: none;
   flex-direction: column;
-  /* Key: fill available height but never overflow below toggle button */
-  max-height: calc(100dvh - 32px - 54px); /* viewport - margin - toggle height */
-  min-height: 0;
 }
 .chat-panel.open { display: flex; }
 .chat-header {
@@ -2669,9 +2670,9 @@ document.addEventListener('DOMContentLoaded', () => {
           <li><b>棋種選擇</b>：點擊「五子棋」「暗棋」「象棋」切換遊戲，切換後自動重新開局。</li>
 
           <li><b>新局</b>：重新開始一盤。連線模式下會邀請對手，需雙方同意才開新局。</li>
-          <li><b>悔棋</b>：撤回上一手，僅限單機模式。</li>
+          <li><b>悔棋</b>：撤回上一手（含 AI 的回應），僅限單機模式。</li>
           <li><b>投降</b>：彈出確認視窗，確認後本局算負。連線模式下會通知對手。</li>
-          <li><b>連線對戰</b>：開啟連線面板，可建立或加入房間與他人對戰。</li>
+          <li><b>連線對戰</b>：開啟 P2P 連線面板，可建立或加入房間與他人對戰。</li>
 
         </ul>
       </div>
@@ -2756,14 +2757,14 @@ document.addEventListener('DOMContentLoaded', () => {
         <h2>♞ 棋盤與陣營</h2>
         <ul>
           <li>棋盤 <b>9 路 × 10 行</b>，中間「楚河漢界」分隔雙方。</li>
-          <li>單機：你執<b>紅方</b>，AI 執黑。連線模式：房主執紅先行，訪客執黑。</li>
+          <li>單機：你執<b>紅方</b>（下方），AI 執黑（上方）。連線模式：房主執紅先行，訪客執黑（棋盤自動翻轉，讓你的棋子永遠在下方）。</li>
         </ul>
       </div>
       <div class="guide-section">
         <h2>♟ 各棋子走法</h2>
         <table class="rank-table">
           <tr><th>棋子</th><th>走法</th><th>限制</th></tr>
-          <tr><td>將／帥</td><td>宮格內上下左右各一步</td><td>不出九宮；將帥不可對面（王對王）</td></tr>
+          <tr><td>將／帥</td><td>宮格內上下左右各一步</td><td>不出九宮；將帥不可對面（飛將）</td></tr>
           <tr><td>仕／士</td><td>宮格內斜走一步</td><td>不出九宮</td></tr>
           <tr><td>相／象</td><td>走「田」字斜兩步</td><td>不可過河；象眼有子則不能走</td></tr>
           <tr><td>馬</td><td>走「日」字（先直後斜）</td><td>馬腿有子則不能走</td></tr>
