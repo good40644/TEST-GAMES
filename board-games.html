@@ -447,7 +447,6 @@ body {
 .online-badge .dot { width:7px;height:7px;border-radius:50%;background:currentColor; }
 
 /* ─── CHAT WIDGET ─── */
-/* Toggle bubble */
 .chat-toggle {
   position: fixed;
   bottom: 16px; right: 16px;
@@ -461,128 +460,102 @@ body {
   align-items: center; justify-content: center;
   font-size: 1.3rem;
   box-shadow: 0 4px 16px rgba(0,0,0,0.5);
-  transition: background .2s;
   color: var(--gold);
+  transition: background .2s;
 }
 .chat-toggle.online-show { display: flex; }
 .chat-toggle:hover { background: rgba(201,162,39,.2); }
 .chat-unread {
-  position: absolute;
-  top: -4px; right: -4px;
+  position: absolute; top: -4px; right: -4px;
   width: 13px; height: 13px;
-  background: var(--red-bright);
-  border-radius: 50%;
-  border: 2px solid var(--bg);
-  display: none;
+  background: var(--red-bright); border-radius: 50%;
+  border: 2px solid var(--bg); display: none;
 }
 .chat-unread.show { display: block; }
 
-/* Header bar */
-.chat-header {
+/* Single container, anchored bottom-left of screen center */
+.chat-panel {
   position: fixed;
-  right: 16px;
-  width: min(300px, calc(100vw - 32px));
-  z-index: 311;
-  display: none;
-  align-items: center; justify-content: space-between;
-  padding: 9px 12px;
-  background: #22180a;
-  border: 1px solid var(--gold);
-  border-bottom: 1px solid var(--border);
-  border-radius: 8px 8px 0 0;
-  font-size: .8rem; color: var(--gold); letter-spacing: .08em;
-}
-.chat-header.open { display: flex; }
-
-/* Input bar — fixed above toggle, always fully visible */
-.chat-input-row {
-  position: fixed;
-  bottom: 70px; right: 16px;
-  width: min(300px, calc(100vw - 32px));
-  z-index: 311;
-  display: none;
-  align-items: center;
-  gap: 6px;
-  padding: 8px 10px;
+  bottom: 70px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(360px, calc(100vw - 24px));
+  max-height: calc(100dvh - 160px);
+  min-height: 0;
+  z-index: 310;
   background: var(--panel);
   border: 1px solid var(--border);
-  border-top: none;
-  border-radius: 0 0 8px 8px;
-}
-.chat-input-row.open { display: flex; }
-
-/* Messages area — between header and input */
-.chat-messages {
-  position: fixed;
-  right: 16px;
-  width: min(300px, calc(100vw - 32px));
-  z-index: 311;
+  border-radius: 8px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.6);
   display: none;
   flex-direction: column;
-  gap: 6px;
+  overflow: hidden;
+}
+.chat-panel.open { display: flex; }
+
+.chat-header {
+  flex-shrink: 0;
+  padding: 9px 12px;
+  background: rgba(201,162,39,.08);
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: space-between;
+  font-size: .8rem; color: var(--gold); letter-spacing: .08em;
+}
+.chat-close-btn {
+  background: none; border: none; color: var(--text-dim);
+  cursor: pointer; font-size: 1rem; padding: 0 2px;
+}
+.chat-close-btn:hover { color: var(--text); }
+.chat-messages {
+  flex: 1;
+  min-height: 80px;
   overflow-y: auto;
   padding: 10px;
-  background: var(--panel);
-  border-left: 1px solid var(--border);
-  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
   scroll-behavior: smooth;
 }
-.chat-messages.open { display: flex; }
 .chat-messages::-webkit-scrollbar { width: 4px; }
-.chat-messages::-webkit-scrollbar-track { background: transparent; }
 .chat-messages::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
-
-/* Messages */
 .chat-msg {
-  max-width: 85%;
-  padding: 6px 10px;
-  border-radius: 10px;
-  font-size: .78rem; line-height: 1.4;
-  word-break: break-word;
+  max-width: 85%; padding: 6px 10px; border-radius: 10px;
+  font-size: .78rem; line-height: 1.4; word-break: break-word;
 }
 .chat-msg.mine {
   align-self: flex-end;
-  background: rgba(201,162,39,.18);
-  border: 1px solid rgba(201,162,39,.3);
-  color: var(--text);
-  border-bottom-right-radius: 3px;
+  background: rgba(201,162,39,.18); border: 1px solid rgba(201,162,39,.3);
+  color: var(--text); border-bottom-right-radius: 3px;
 }
 .chat-msg.theirs {
   align-self: flex-start;
-  background: rgba(255,255,255,.05);
-  border: 1px solid var(--border);
-  color: var(--text);
-  border-bottom-left-radius: 3px;
+  background: rgba(255,255,255,.05); border: 1px solid var(--border);
+  color: var(--text); border-bottom-left-radius: 3px;
 }
 .chat-msg .chat-sender { font-size: .65rem; color: var(--text-dim); margin-bottom: 2px; }
 .chat-msg.system {
   align-self: center; background: none; border: none;
   color: var(--text-dim); font-size: .7rem; font-style: italic;
 }
-/* Input */
+.chat-input-row {
+  flex-shrink: 0;
+  display: flex; align-items: center; gap: 6px;
+  padding: 8px 10px; border-top: 1px solid var(--border);
+}
 .chat-input {
-  flex: 1;
-  background: rgba(255,255,255,.05);
-  border: 1px solid var(--border);
-  border-radius: 4px;
-  padding: 7px 8px;
-  color: var(--text); font-size: .8rem; outline: none;
-  font-family: 'Noto Serif TC', serif;
+  flex: 1; background: rgba(255,255,255,.05);
+  border: 1px solid var(--border); border-radius: 4px;
+  padding: 7px 8px; color: var(--text); font-size: .8rem;
+  outline: none; font-family: 'Noto Serif TC', serif;
 }
 .chat-input:focus { border-color: var(--gold); }
 .chat-send-btn {
-  flex-shrink: 0;
-  padding: 7px 12px;
+  flex-shrink: 0; padding: 7px 12px;
   background: var(--gold); border: none; border-radius: 4px;
   color: var(--bg); font-weight: 700; font-size: .8rem;
-  cursor: pointer; transition: background .15s; white-space: nowrap;
+  cursor: pointer; white-space: nowrap;
 }
 .chat-send-btn:hover { background: var(--gold-light); }
-.chat-close-btn {
-  background: none; border: none; color: var(--text-dim);
-  cursor: pointer; font-size: 1rem; padding: 0 2px;
-}
-.chat-close-btn:hover { color: var(--text); }
 
 
 /* ─── GUIDE PANEL ─── */
@@ -745,23 +718,21 @@ body {
   </main>
 </div>
 
-<!-- ─── CHAT WIDGET (3 independent fixed layers) ─── -->
-<!-- Toggle bubble -->
+<!-- ─── CHAT WIDGET ─── -->
 <button class="chat-toggle" id="chat-toggle" onclick="toggleChat()" title="訊息">
   💬<div class="chat-unread" id="chat-unread"></div>
 </button>
-<!-- Header -->
-<div class="chat-header" id="chat-header">
-  💬 對話
-  <button class="chat-close-btn" onclick="toggleChat()">✕</button>
-</div>
-<!-- Messages -->
-<div class="chat-messages" id="chat-messages"></div>
-<!-- Input row — always above toggle, always fully visible -->
-<div class="chat-input-row" id="chat-input-row">
-  <input class="chat-input" id="chat-input" placeholder="輸入訊息…" maxlength="100"
-         onkeydown="if(event.key==='Enter')sendChat()">
-  <button class="chat-send-btn" onclick="sendChat()">送出</button>
+<div class="chat-panel" id="chat-panel">
+  <div class="chat-header">
+    💬 對話
+    <button class="chat-close-btn" onclick="toggleChat()">✕</button>
+  </div>
+  <div class="chat-messages" id="chat-messages"></div>
+  <div class="chat-input-row">
+    <input class="chat-input" id="chat-input" placeholder="輸入訊息…" maxlength="100"
+           onkeydown="if(event.key==='Enter')sendChat()">
+    <button class="chat-send-btn" onclick="sendChat()">送出</button>
+  </div>
 </div>
 
 <!-- ─── ONLINE PANEL ─── -->
@@ -2554,40 +2525,13 @@ let unreadCount = 0;
 
 function toggleChat() {
   chatOpen = !chatOpen;
-  const header   = document.getElementById('chat-header');
-  const messages = document.getElementById('chat-messages');
-  const inputRow = document.getElementById('chat-input-row');
-
+  document.getElementById('chat-panel').classList.toggle('open', chatOpen);
   if (chatOpen) {
-    // Calculate positions: toggle at bottom:16px (height 46px)
-    // input-row above toggle: bottom = 16+46+6 = 68px
-    // header above messages; messages fill between header and input-row
-    const inputBottom = 70; // px from bottom
-    const inputHeight = 52; // approx height of input row
-    const headerHeight = 40;
-    const topMargin = 110; // toolbar + safe area
-    const maxMsgsHeight = window.innerHeight - topMargin - headerHeight - inputHeight - inputBottom;
-    const msgsHeight = Math.max(120, Math.min(280, maxMsgsHeight));
-    const headerBottom = inputBottom + inputHeight;
-    const msgsBottom   = headerBottom + headerHeight;
-
-    inputRow.style.bottom = inputBottom + 'px';
-    messages.style.bottom  = msgsBottom + 'px';
-    messages.style.height  = msgsHeight + 'px';
-    header.style.bottom    = (msgsBottom + msgsHeight) + 'px';
-
-    header.classList.add('open');
-    messages.classList.add('open');
-    inputRow.classList.add('open');
-
     unreadCount = 0;
     document.getElementById('chat-unread').classList.remove('show');
-    messages.scrollTop = messages.scrollHeight;
+    const msgs = document.getElementById('chat-messages');
+    msgs.scrollTop = msgs.scrollHeight;
     document.getElementById('chat-input').focus();
-  } else {
-    header.classList.remove('open');
-    messages.classList.remove('open');
-    inputRow.classList.remove('open');
   }
 }
 
@@ -2595,9 +2539,7 @@ function showChatWidget(show) {
   document.getElementById('chat-toggle').classList.toggle('online-show', show);
   if (!show && chatOpen) {
     chatOpen = false;
-    document.getElementById('chat-header').classList.remove('open');
-    document.getElementById('chat-messages').classList.remove('open');
-    document.getElementById('chat-input-row').classList.remove('open');
+    document.getElementById('chat-panel').classList.remove('open');
   }
 }
 
