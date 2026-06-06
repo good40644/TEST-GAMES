@@ -445,6 +445,141 @@ body {
 .online-badge:hover { border-color: var(--blue-bright); color: var(--blue-bright); }
 .online-badge.connected { border-color: #27ae60; color: #2ecc71; }
 .online-badge .dot { width:7px;height:7px;border-radius:50%;background:currentColor; }
+
+/* ─── CHAT WIDGET ─── */
+.chat-widget {
+  position: fixed;
+  bottom: 20px; right: 20px;
+  z-index: 300;
+  display: none; /* shown only when online */
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 8px;
+}
+.chat-widget.online-show { display: flex; }
+
+/* Collapsed toggle button */
+.chat-toggle {
+  position: relative;
+  width: 46px; height: 46px;
+  border-radius: 50%;
+  background: var(--panel);
+  border: 1px solid var(--gold);
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.3rem;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.4);
+  transition: all .2s;
+  color: var(--gold);
+}
+.chat-toggle:hover { background: rgba(201,162,39,.15); transform: scale(1.07); }
+.chat-unread {
+  position: absolute;
+  top: -4px; right: -4px;
+  width: 14px; height: 14px;
+  background: var(--red-bright);
+  border-radius: 50%;
+  border: 2px solid var(--bg);
+  display: none;
+}
+.chat-unread.show { display: block; }
+
+/* Chat panel */
+.chat-panel {
+  width: 280px;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+  overflow: hidden;
+  display: none;
+  flex-direction: column;
+}
+.chat-panel.open { display: flex; }
+.chat-header {
+  padding: 10px 12px;
+  background: rgba(201,162,39,.08);
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: space-between;
+  font-size: .8rem; color: var(--gold); letter-spacing: .1em;
+}
+.chat-close-btn {
+  background: none; border: none; color: var(--text-dim);
+  cursor: pointer; font-size: 1rem; line-height: 1;
+  padding: 0 2px;
+}
+.chat-close-btn:hover { color: var(--text); }
+.chat-messages {
+  flex: 1;
+  height: 220px;
+  overflow-y: auto;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  scroll-behavior: smooth;
+}
+.chat-messages::-webkit-scrollbar { width: 4px; }
+.chat-messages::-webkit-scrollbar-track { background: transparent; }
+.chat-messages::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+.chat-msg {
+  max-width: 85%;
+  padding: 6px 10px;
+  border-radius: 10px;
+  font-size: .78rem;
+  line-height: 1.4;
+  word-break: break-word;
+}
+.chat-msg.mine {
+  align-self: flex-end;
+  background: rgba(201,162,39,.18);
+  border: 1px solid rgba(201,162,39,.3);
+  color: var(--text);
+  border-bottom-right-radius: 3px;
+}
+.chat-msg.theirs {
+  align-self: flex-start;
+  background: rgba(255,255,255,.05);
+  border: 1px solid var(--border);
+  color: var(--text);
+  border-bottom-left-radius: 3px;
+}
+.chat-msg .chat-sender {
+  font-size: .65rem; color: var(--text-dim);
+  margin-bottom: 2px;
+}
+.chat-msg.system {
+  align-self: center;
+  background: none; border: none;
+  color: var(--text-dim); font-size: .7rem; font-style: italic;
+}
+.chat-input-row {
+  display: flex;
+  padding: 8px;
+  gap: 6px;
+  border-top: 1px solid var(--border);
+}
+.chat-input {
+  flex: 1;
+  background: rgba(255,255,255,.05);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 6px 8px;
+  color: var(--text);
+  font-size: .8rem;
+  outline: none;
+  font-family: 'Noto Serif TC', serif;
+}
+.chat-input:focus { border-color: var(--gold); }
+.chat-send-btn {
+  padding: 6px 10px;
+  background: var(--gold);
+  border: none; border-radius: 4px;
+  color: var(--bg); font-weight: 700; font-size: .8rem;
+  cursor: pointer; transition: background .15s;
+}
+.chat-send-btn:hover { background: var(--gold-light); }
+
 </style>
 </style>
 </head>
@@ -506,6 +641,26 @@ body {
   </main>
 </div>
 
+<!-- ─── CHAT WIDGET ─── -->
+<div class="chat-widget" id="chat-widget">
+  <div class="chat-panel" id="chat-panel">
+    <div class="chat-header">
+      💬 對話
+      <button class="chat-close-btn" onclick="toggleChat()">✕</button>
+    </div>
+    <div class="chat-messages" id="chat-messages"></div>
+    <div class="chat-input-row">
+      <input class="chat-input" id="chat-input" placeholder="輸入訊息…" maxlength="100"
+             onkeydown="if(event.key==='Enter')sendChat()">
+      <button class="chat-send-btn" onclick="sendChat()">送出</button>
+    </div>
+  </div>
+  <button class="chat-toggle" onclick="toggleChat()" title="訊息">
+    💬
+    <div class="chat-unread" id="chat-unread"></div>
+  </button>
+</div>
+
 <!-- ─── ONLINE PANEL ─── -->
 <div class="online-panel" id="online-panel">
   <div class="online-box" style="position:relative">
@@ -565,12 +720,31 @@ let myOnlineColor = null; // 'red'|'black' in online mode
    UI HELPERS
 ═══════════════════════════════════════════════ */
 function selectGame(g) {
+  if (onlineMode && g !== currentGame) {
+    // Ask opponent before switching game type
+    pendingGameSwitch = g;
+    document.getElementById('msg-title').textContent = '🎮 切換棋種？';
+    document.getElementById('msg-sub').textContent = '邀請對手切換為：' + {gomoku:'五子棋',darkchess:'暗棋',xiangqi:'象棋'}[g];
+    document.getElementById('msg-btns').innerHTML =
+      '<button class="action-btn primary" onclick="confirmGameSwitch()">發送邀請</button>' +
+      '<button class="action-btn" onclick="hideMessage()" style="margin-left:8px">取消</button>';
+    document.getElementById('msg-overlay').classList.add('show');
+    return;
+  }
   currentGame = g;
   ['gomoku','darkchess','xiangqi'].forEach(x => {
     document.getElementById('btn-'+x).classList.toggle('active', x===g);
   });
   updateRules();
   newGame();
+}
+let pendingGameSwitch = null;
+function confirmGameSwitch() {
+  hideMessage();
+  if (!pendingGameSwitch) return;
+  sendMsg({ type: 'newgame', game: pendingGameSwitch });
+  document.getElementById('turn-text').textContent = '等待對手同意…';
+  pendingGameSwitch = null;
 }
 function setDiff(d) {
   difficulty = d;
@@ -606,8 +780,13 @@ function showThinking(b) {
 function showMessage(title, sub) {
   document.getElementById('msg-title').textContent = title;
   document.getElementById('msg-sub').textContent = sub;
-  document.getElementById('msg-btns').innerHTML =
-    '<button class="action-btn primary" onclick="newGame()">再來一局</button>';
+  if (onlineMode) {
+    document.getElementById('msg-btns').innerHTML =
+      '<button class="action-btn primary" onclick="hideMessage();sendNewGame()">邀請重開</button>';
+  } else {
+    document.getElementById('msg-btns').innerHTML =
+      '<button class="action-btn primary" onclick="newGame()">再來一局</button>';
+  }
   document.getElementById('msg-overlay').classList.add('show');
 }
 function hideMessage() {
@@ -646,7 +825,11 @@ function clearGameArea() {
   xqCanvas = null; xqCtx = null;
 }
 function newGame() {
-  if (onlineMode) { startOnlineGame(); return; }
+  if (onlineMode) {
+    hideMessage();
+    sendNewGame();
+    return;
+  }
   hideMessage();
   history = [];
   humanTurn = true;
@@ -1433,9 +1616,20 @@ function initXiangqi() {
 
 function xqCellW() {
   if (!xqCanvas) return 40;
-  // Use CSS width (style.width) so coords match click events
   const cssW = parseInt(xqCanvas.style.width) || xqCanvas.width;
   return Math.floor(cssW / (XQ_COLS+1));
+}
+// Returns true when the board should be drawn from black's perspective (guest in online)
+function xqIsFlipped() {
+  return onlineMode && myOnlineColor === 2;
+}
+// Map logical [r,c] → display [dr,dc] based on perspective
+function xqToDisplay(r, c) {
+  return xqIsFlipped() ? [XQ_ROWS-1-r, XQ_COLS-1-c] : [r, c];
+}
+// Map display click coords → logical [r,c]
+function xqFromDisplay(dr, dc) {
+  return xqIsFlipped() ? [XQ_ROWS-1-dr, XQ_COLS-1-dc] : [dr, dc];
 }
 
 function drawXiangqi() {
@@ -1467,11 +1661,16 @@ function drawXiangqi() {
     ctx.beginPath(); ctx.moveTo(offX,offY+r*cw); ctx.lineTo(offX+cw*8,offY+r*cw); ctx.stroke();
   }
 
-  // River label
+  // River label (swap sides when flipped)
   ctx.fillStyle='#8B6914'; ctx.font=`bold ${cw*0.4}px 'Noto Serif TC',serif`;
   ctx.textAlign='center'; ctx.textBaseline='middle';
-  ctx.fillText('楚 河', offX+cw*2, offY+cw*4.5);
-  ctx.fillText('漢 界', offX+cw*6, offY+cw*4.5);
+  if (xqIsFlipped()) {
+    ctx.fillText('漢 界', offX+cw*2, offY+cw*4.5);
+    ctx.fillText('楚 河', offX+cw*6, offY+cw*4.5);
+  } else {
+    ctx.fillText('楚 河', offX+cw*2, offY+cw*4.5);
+    ctx.fillText('漢 界', offX+cw*6, offY+cw*4.5);
+  }
 
   // Palace diagonals (top)
   ctx.strokeStyle='#6b4c1e'; ctx.lineWidth=1;
@@ -1486,26 +1685,40 @@ function drawXiangqi() {
     const [[r1,c1],[r2,c2]]=xqLastMove;
     ctx.fillStyle='rgba(255,255,0,0.25)';
     [[r1,c1],[r2,c2]].forEach(([r,c])=>{
-      ctx.beginPath(); ctx.arc(offX+c*cw,offY+r*cw,cw*0.42,0,Math.PI*2); ctx.fill();
+      const [dr,dc]=xqToDisplay(r,c);
+      ctx.beginPath(); ctx.arc(offX+dc*cw,offY+dr*cw,cw*0.42,0,Math.PI*2); ctx.fill();
     });
   }
   if (xqSel) {
     const [sr,sc]=xqSel;
+    const [dsr,dsc]=xqToDisplay(sr,sc);
     ctx.fillStyle='rgba(201,162,39,0.4)';
-    ctx.beginPath(); ctx.arc(offX+sc*cw,offY+sr*cw,cw*0.44,0,Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.arc(offX+dsc*cw,offY+dsr*cw,cw*0.44,0,Math.PI*2); ctx.fill();
     ctx.strokeStyle='#c9a227'; ctx.lineWidth=2;
-    ctx.beginPath(); ctx.arc(offX+sc*cw,offY+sr*cw,cw*0.44,0,Math.PI*2); ctx.stroke();
-    // move dots
+    ctx.beginPath(); ctx.arc(offX+dsc*cw,offY+dsr*cw,cw*0.44,0,Math.PI*2); ctx.stroke();
     xqMoves.forEach(([mr,mc])=>{
+      const [dmr,dmc]=xqToDisplay(mr,mc);
       const target = xqBoard[mr][mc];
       if (target!==0) {
         ctx.strokeStyle='rgba(192,57,43,0.8)'; ctx.lineWidth=2;
-        ctx.beginPath(); ctx.arc(offX+mc*cw,offY+mr*cw,cw*0.44,0,Math.PI*2); ctx.stroke();
+        ctx.beginPath(); ctx.arc(offX+dmc*cw,offY+dmr*cw,cw*0.44,0,Math.PI*2); ctx.stroke();
       } else {
         ctx.fillStyle='rgba(41,128,185,0.5)';
-        ctx.beginPath(); ctx.arc(offX+mc*cw,offY+mr*cw,cw*0.18,0,Math.PI*2); ctx.fill();
+        ctx.beginPath(); ctx.arc(offX+dmc*cw,offY+dmr*cw,cw*0.18,0,Math.PI*2); ctx.fill();
       }
     });
+  }
+
+  // Side labels in online mode
+  if (onlineMode) {
+    ctx.font = `${cw*0.32}px 'Noto Serif TC',serif`;
+    ctx.textBaseline='middle'; ctx.textAlign='left';
+    const myLabel  = xqIsFlipped() ? '你（黑）▲' : '你（紅）▲';
+    const oppLabel = xqIsFlipped() ? '對手（紅）▼' : '對手（黑）▼';
+    ctx.fillStyle = xqIsFlipped() ? '#888' : '#c8a020';
+    ctx.fillText(myLabel,  offX, H - cw*0.45);
+    ctx.fillStyle = xqIsFlipped() ? '#c8a020' : '#888';
+    ctx.fillText(oppLabel, offX, cw*0.45);
   }
 
   // Pieces
@@ -1513,7 +1726,8 @@ function drawXiangqi() {
     for (let c=0;c<XQ_COLS;c++) {
       const p=xqBoard[r][c]; if(!p) continue;
       const isRed=p>0; const type=Math.abs(p);
-      const x=offX+c*cw, y=offY+r*cw, rad=cw*0.42;
+      const [dr,dc]=xqToDisplay(r,c);
+      const x=offX+dc*cw, y=offY+dr*cw, rad=cw*0.42;
       // Shadow
       ctx.shadowColor='rgba(0,0,0,0.35)'; ctx.shadowBlur=5; ctx.shadowOffsetX=2; ctx.shadowOffsetY=2;
       // Piece circle
@@ -1686,8 +1900,10 @@ function onXQClick(e) {
   const cw=xqCellW();
   const rect=xqCanvas.getBoundingClientRect();
   const x=e.clientX-rect.left, y=e.clientY-rect.top;
-  const c=Math.round((x-cw)/cw), r=Math.round((y-cw)/cw);
-  if(r<0||r>=XQ_ROWS||c<0||c>=XQ_COLS) return;
+  const dc=Math.round((x-cw)/cw), dr=Math.round((y-cw)/cw);
+  if(dr<0||dr>=XQ_ROWS||dc<0||dc>=XQ_COLS) return;
+  // Convert display coords → logical coords
+  const [r,c] = xqFromDisplay(dr, dc);
   const p=xqBoard[r][c];
 
   // If move highlighted
@@ -2007,8 +2223,11 @@ function setupConn(conn) {
   document.getElementById('online-game-controls').style.display = 'block';
   updateOnlineBadge();
 
+  // Show chat
+  showChatWidget(true);
+  chatSystemMsg('已連線，可以開始對話');
+
   if (amHost) {
-    // Host starts the game as online
     hideOnlinePanel();
     startOnlineGame();
     setHostStatus('對手已連入！遊戲開始', 'ok');
@@ -2020,6 +2239,8 @@ function onPeerClose() {
   updateOnlineBadge();
   setConnStatus('對手已離線', 'err');
   document.getElementById('online-game-controls').style.display = 'none';
+  chatSystemMsg('對手已離線');
+  showChatWidget(false);
   showMessage('對手離線', '對手已斷開連線');
 }
 
@@ -2029,6 +2250,7 @@ function disconnectPeer() {
   updateOnlineBadge();
   document.getElementById('online-game-controls').style.display = 'none';
   setConnStatus('已斷開', 'idle');
+  showChatWidget(false);
   hideOnlinePanel();
 }
 
@@ -2064,23 +2286,48 @@ function onPeerData(raw) {
     applyOnlineMove(msg);
   }
   else if (msg.type === 'newgame') {
-    // Opponent requests new game
-    showMessage('對手邀請重開', '對手邀請重開一局');
+    // Store the requested game type so acceptOnlineNewGame can apply it
+    pendingOnlineGame = msg.game || currentGame;
+    const gameNames = {gomoku:'五子棋', darkchess:'暗棋', xiangqi:'象棋'};
+    const isSameGame = pendingOnlineGame === currentGame;
+    const subText = isSameGame ? '是否同意重開一局？'
+      : `對手想改玩「${gameNames[pendingOnlineGame]}」，是否同意？`;
+    document.getElementById('msg-title').textContent = '🔄 對手邀請重開';
+    document.getElementById('msg-sub').textContent = subText;
     document.getElementById('msg-btns').innerHTML =
       '<button class="action-btn primary" onclick="acceptOnlineNewGame()">同意</button>' +
-      '<button class="action-btn" onclick="hideMessage()" style="margin-left:8px">拒絕</button>';
+      '<button class="action-btn" onclick="rejectOnlineNewGame()" style="margin-left:8px">拒絕</button>';
+    document.getElementById('msg-overlay').classList.add('show');
   }
   else if (msg.type === 'newgame_accept') {
+    hideMessage();
+    if (msg.game && msg.game !== currentGame) {
+      currentGame = msg.game;
+      ['gomoku','darkchess','xiangqi'].forEach(x =>
+        document.getElementById('btn-'+x).classList.toggle('active', x===currentGame));
+      updateRules();
+    }
     startOnlineGame();
   }
+  else if (msg.type === 'newgame_reject') {
+    document.getElementById('turn-text').textContent = '對手拒絕了重開邀請';
+    setTimeout(updateOnlineTurnText, 2500);
+  }
   else if (msg.type === 'surrender') {
+    gameActive = false;
     scoreHuman++;
     updateScore();
     showMessage('🎉 對手投降！', '你獲勝了！');
   }
+  else if (msg.type === 'chat') {
+    receiveChatMsg(msg.text);
+  }
 }
 
 function startOnlineGame() {
+  hideMessage();
+  showThinking(false);
+  chatSystemMsg('── 新局開始 ──');
   // myOnlineColor: host=1 (red/first), guest=2 (black/second)
   gameActive = true;
   history = [];
@@ -2112,14 +2359,31 @@ function updateOnlineTurnText() {
 }
 
 function sendNewGame() {
-  sendMsg({ type: 'newgame' });
-  showMessage('邀請重開', '等待對手回應…');
-  document.getElementById('msg-btns').innerHTML = '<button class="action-btn" onclick="hideMessage()">取消</button>';
+  if (!peerConn || !peerConn.open) {
+    showMessage('未連線', '目前沒有連線中的對手');
+    return;
+  }
+  sendMsg({ type: 'newgame', game: currentGame });
+  document.getElementById('turn-text').textContent = '等待對手同意重開…';
+  document.getElementById('turn-dot').className = 'turn-dot black';
 }
+let pendingOnlineGame = null;
 function acceptOnlineNewGame() {
   hideMessage();
-  sendMsg({ type: 'newgame_accept' });
+  if (pendingOnlineGame && pendingOnlineGame !== currentGame) {
+    currentGame = pendingOnlineGame;
+    ['gomoku','darkchess','xiangqi'].forEach(x =>
+      document.getElementById('btn-'+x).classList.toggle('active', x===currentGame));
+    updateRules();
+  }
+  pendingOnlineGame = null;
+  sendMsg({ type: 'newgame_accept', game: currentGame });
   startOnlineGame();
+}
+function rejectOnlineNewGame() {
+  hideMessage();
+  pendingOnlineGame = null;
+  sendMsg({ type: 'newgame_reject' });
 }
 
 /* ─── Online move dispatch / receive ─── */
@@ -2142,18 +2406,16 @@ function applyOnlineGomoku(msg) {
   const {r, c} = msg;
   const opponentPlayer = myOnlineColor === 1 ? 2 : 1;
   placeGomoku(r, c, opponentPlayer);
-  if (checkGomokuWin(r, c, opponentPlayer)) { gameOver(false); }
+  if (checkGomokuWin(r, c, opponentPlayer)) { gameOver(false); return; }
+  if (isBoardFullGomoku()) { gameActive=false; showMessage('平局','棋盤已滿'); return; }
+  humanTurn = true;
+  updateOnlineTurnText();
 }
 
 /* ── Dark chess online ── */
 function applyOnlineDC(msg) {
   if (msg.action === 'flip') {
     dcBoard[msg.r][msg.c].hidden = false;
-    if (dcFirst === null) {
-      dcFirst = dcBoard[msg.r][msg.c].color === 1 ? 2 : 1; // we get opposite color
-      dcAIColor = dcBoard[msg.r][msg.c].color; // not used in online but keep consistent
-      myOnlineColor = dcFirst;
-    }
   } else if (msg.action === 'move') {
     dcBoard[msg.tr][msg.tc] = dcBoard[msg.fr][msg.fc];
     dcBoard[msg.fr][msg.fc] = {type:0,color:0,hidden:false};
@@ -2163,6 +2425,8 @@ function applyOnlineDC(msg) {
   const oppColor = myOnlineColor === 1 ? 2 : 1;
   if (dcCheckWin(myOnlineColor)) { gameOver(true); return; }
   if (dcCheckWin(oppColor)) { gameOver(false); return; }
+  humanTurn = true;
+  updateOnlineTurnText();
 }
 
 /* ── Xiangqi online ── */
@@ -2173,9 +2437,77 @@ function applyOnlineXQ(msg) {
   xqBoard[fr][fc] = 0;
   drawXiangqi();
   const myIsRed = myOnlineColor === 1;
-  if (!xqFindGeneral(xqBoard, myIsRed)) { gameOver(false); }
-  else if (xqIsCheckmate(xqBoard, myIsRed)) { gameOver(false); }
+  // Check if I (the receiver) am now in checkmate
+  if (!xqFindGeneral(xqBoard, myIsRed)) { gameOver(false); return; }
+  if (xqIsCheckmate(xqBoard, myIsRed)) { gameOver(false); return; }
+  humanTurn = true;
+  updateOnlineTurnText();
 }
+/* ═══════════════════════════════════════════════
+   CHAT
+═══════════════════════════════════════════════ */
+let chatOpen = false;
+let unreadCount = 0;
+
+function toggleChat() {
+  chatOpen = !chatOpen;
+  document.getElementById('chat-panel').classList.toggle('open', chatOpen);
+  if (chatOpen) {
+    unreadCount = 0;
+    document.getElementById('chat-unread').classList.remove('show');
+    // Scroll to bottom
+    const msgs = document.getElementById('chat-messages');
+    msgs.scrollTop = msgs.scrollHeight;
+    document.getElementById('chat-input').focus();
+  }
+}
+
+function showChatWidget(show) {
+  document.getElementById('chat-widget').classList.toggle('online-show', show);
+  if (!show) {
+    chatOpen = false;
+    document.getElementById('chat-panel').classList.remove('open');
+  }
+}
+
+function appendChatMsg(text, type, sender) {
+  const msgs = document.getElementById('chat-messages');
+  const div = document.createElement('div');
+  div.className = 'chat-msg ' + type;
+  if (type !== 'system' && sender) {
+    const s = document.createElement('div');
+    s.className = 'chat-sender';
+    s.textContent = sender;
+    div.appendChild(s);
+  }
+  const t = document.createElement('span');
+  t.textContent = text;
+  div.appendChild(t);
+  msgs.appendChild(div);
+  msgs.scrollTop = msgs.scrollHeight;
+}
+
+function sendChat() {
+  const input = document.getElementById('chat-input');
+  const text = input.value.trim();
+  if (!text || !peerConn || !peerConn.open) return;
+  sendMsg({ type: 'chat', text });
+  appendChatMsg(text, 'mine', '你');
+  input.value = '';
+}
+
+function receiveChatMsg(text) {
+  appendChatMsg(text, 'theirs', '對手');
+  if (!chatOpen) {
+    unreadCount++;
+    document.getElementById('chat-unread').classList.add('show');
+  }
+}
+
+function chatSystemMsg(text) {
+  appendChatMsg(text, 'system', null);
+}
+
 /* ═══════════════════════════════════════════════
    INIT
 ═══════════════════════════════════════════════ */
